@@ -1,0 +1,189 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Configuración Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ4G1s-J8XyDrZ2NwmJ_fmbooVsndPC88",
+  authDomain: "controlayudantiassal.firebaseapp.com",
+  projectId: "controlayudantiassal",
+  storageBucket: "controlayudantiassal.firebasestorage.app",
+  messagingSenderId: "774566325891",
+  appId: "1:774566325891:web:7f4ddf697094525ed3b5b6",
+  measurementId: "G-2Z8K02KG3V"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Variables globales
+let currentUserDocId = null;
+
+// Esperar al usuario autenticado
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const usuariosSnapshot = await getDocs(collection(db, "usuarios"));
+    usuariosSnapshot.forEach((docu) => {
+      const data = docu.data();
+      if (data.email === user.email && data.rol === "docente") {
+        currentUserDocId = docu.id;
+        mostrarReportesDocente(currentUserDocId); // Mostrar los reportes del docente
+      }
+    });
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+async function mostrarReportesDocente(docenteId) {
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+
+  // 1. Obtener pasantes asignados al docente
+  const pasantesQuery = query(
+    collection(db, "usuarios"),
+    where("rol", "==", "pasante"),
+    where("docenteAsignadoId", "==", docenteId)
+  );
+  const pasantesSnapshot = await getDocs(pasantesQuery);
+  const pasantesMap = new Map();
+
+  pasantesSnapshot.forEach(doc => {
+    pasantesMap.set(doc.ref.path, {
+      nombre: doc.data().nombre,
+      materia: doc.data().materiaAsignada,
+      reportes: []
+    });
+  });
+
+  if (pasantesMap.size === 0) {
+    content.innerHTML = "<p>No hay pasantes asignados a este docente.</p>";
+    return;
+  }
+
+  // 2. Obtener todos los reportes
+  const reportesSnapshot = await getDocs(collection(db, "reportes"));
+
+  // 3. Filtrar reportes de pasantes asignados
+  reportesSnapshot.forEach(doc => {
+    const data = doc.data();
+    const pasantePath = data.IdPasante.path;
+    if (pasantesMap.has(pasantePath)) {
+      pasantesMap.get(pasantePath).reportes.push({ id: doc.id, ...data });
+    }
+  });
+
+  // 4. Mostrar por pasante
+  pasantesMap.forEach((info, pasantePath) => {
+    const container = document.createElement("div");
+    container.classList.add("mb-4");
+
+    const encabezado = document.createElement("div");
+    encabezado.classList.add("alert", "alert-primary");
+    encabezado.innerHTML = `<h4>${info.nombre}</h4><p><strong>Materia Asignada:</strong> ${info.materia}</p>`;
+    container.appendChild(encabezado);
+
+    if (info.reportes.length === 0) {
+      container.innerHTML += "<p>No hay reportes disponibles para este pasante.</p>";
+    } else {
+      info.reportes.forEach((reporte) => {
+        const card = document.createElement("div");
+        card.classList.add("card", "mb-3");
+
+        card.innerHTML = `
+          <div class="card-header">
+            <p><strong>Fecha:</strong> ${reporte.Fecha}</p>
+          </div>
+          <div class="card-body">
+            <p><strong>Hora de Entrada:</strong> ${reporte.HoraEntrada}</p>
+            <p><strong>Hora de Salida:</strong> ${reporte.HoraSalida || "-"}</p>
+            <p><strong>Cantidad de Asistentes:</strong> ${reporte.CantidadAsistentes}</p>
+            <p><strong>Temas Tratados:</strong> ${reporte.TemasTratados}</p>
+
+            <div class="mb-3">
+              <label for="calificacion_${reporte.id}" class="form-label">⭐ Calificación</label>
+              <input type="number" class="form-control" id="calificacion_${reporte.id}" min="1" max="5" value="${reporte.Calificacion || ""}">
+            </div>
+
+            <div class="mb-3">
+              <label for="observacion_${reporte.id}" class="form-label">💬 Observación</label>
+              <textarea class="form-control" id="observacion_${reporte.id}" rows="3">${reporte.Observacion || ""}</textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="guardarCalificacionYObservacion('${reporte.id}')">Guardar Calificación y Observación</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    content.appendChild(container);
+  });
+}
+
+
+
+
+// Función para guardar la calificación y observación
+window.guardarCalificacionYObservacion = async function(reporteId) {
+  const calificacion = document.getElementById(`calificacion_${reporteId}`).value;
+  const observacion = document.getElementById(`observacion_${reporteId}`).value;
+
+  if (calificacion === "" || observacion === "") {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campos incompletos',
+      text: 'Por favor, complete la calificación y la observación.',
+      confirmButtonText: 'Aceptar'
+    });    
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "reportes", reporteId), {
+      Calificacion: parseInt(calificacion),
+      Observacion: observacion
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: '¡Guardado!',
+      text: 'Calificación y observación guardadas correctamente.',
+      timer: 2500,
+      showConfirmButton: false,
+      timerProgressBar: true
+    });
+    mostrarReportesDocente(currentUserDocId); // Volver a cargar los reportes con la nueva calificación
+  } catch (error) {
+    console.error("Error al guardar la calificación y observación:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Ocurrió un error al guardar la información.',
+      confirmButtonText: 'Aceptar'
+    });
+  }
+}
+
+// Función de cierre de sesión
+document.getElementById("logoutButton").addEventListener("click", () => {
+  signOut(auth).then(() => {
+    window.location.href = "login.html"; // Redirigir a la página de login
+  });
+});
+

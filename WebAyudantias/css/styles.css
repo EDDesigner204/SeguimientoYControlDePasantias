@@ -1,0 +1,81 @@
+
+
+
+/* estilos.css */
+
+.carousel-item img {
+    max-height: 600px;
+    object-fit: cover;
+  }
+  
+  .carousel-caption {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    .carousel-caption h5 {
+      font-size: 1.2rem;
+    }
+  
+    .carousel-caption p {
+      font-size: 0.9rem;
+    }
+  }
+
+  /* estilos.css - ya existente */
+
+#quienes-somos .bg-white {
+    transition: transform 0.3s ease;
+  }
+  
+  #quienes-somos .bg-white:hover {
+    transform: scale(1.02);
+  }
+  
+  #quienes-somos h2 {
+    font-weight: bold;
+    font-size: 2rem;
+  }
+  
+  #quienes-somos p {
+    font-size: 1.1rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+  
+/* Estilo general de las pestañas */
+.custom-tabs .nav-link {
+    background-color: #104573;
+    color: white;
+    border: 2px solid #07418C;
+    margin-right: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Estilo cuando el tab está activo */
+  .custom-tabs .nav-link.active {
+    background-color: #D90718;
+    color: white;
+    border-color: #D90718;
+  }
+  
+
+  .fb-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+  .fb-page iframe {
+    width: 100% !important;
+  }
+  
+
+  .bg-naranja {
+    background-color: #1d048d;
+  }
+  
+
+  

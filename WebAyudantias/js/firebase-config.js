@@ -1,0 +1,22 @@
+// js/firebase-config.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Configuración Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ4G1s-J8XyDrZ2NwmJ_fmbooVsndPC88",
+  authDomain: "controlayudantiassal.firebaseapp.com",
+  projectId: "controlayudantiassal",
+  storageBucket: "controlayudantiassal.firebasestorage.app",
+  messagingSenderId: "774566325891",
+  appId: "1:774566325891:web:7f4ddf697094525ed3b5b6",
+  measurementId: "G-2Z8K02KG3V"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+export { app, auth, db };

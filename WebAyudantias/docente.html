@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docente</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body>
+  <!-- NAVBAR RESPONSIVO -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="img/log.png" alt="Logo" width="40" height="40" class="me-2">
+        Universidad Salesiana
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="#quienes-somos">Quiénes Somos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#informaciones">Informaciones</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login.html">Acceder</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h2>Bienvenido, Docente</h2>
+
+    <!-- Botones para calificar y cerrar sesión -->
+    <div>
+      <button class="btn btn-danger" id="logoutButton">Cerrar Sesión</button>
+    </div>
+
+    <!-- Contenedor dinámico para mostrar la lista de pasantes -->
+    <div id="content" class="mt-4">
+      <!-- Se llenará dinámicamente -->
+    </div>
+  </div>
+
+  <!-- SECCIÓN QUIÉNES SOMOS -->
+  <section id="quienes-somos" class="py-5 bg-light">
+    <div class="container">
+      <div class="p-4 bg-white shadow rounded text-center">
+        <h2 class="mb-3 text-primary">Ingeniería de Sistemas</h2>
+        <p class="lead">
+          En la Universidad Salesiana, la carrera de <strong>Ingeniería de Sistemas</strong> impulsa a sus estudiantes a aplicar sus conocimientos técnicos en el desarrollo de soluciones reales. Se fomenta una formación desde la perspectiva de un ingeniero comprometido con la transformación social y tecnológica del entorno.
+        </p>
+        <p>
+          Nuestros estudiantes participan activamente en proyectos que resuelven problemas del mundo real, adquiriendo experiencia valiosa en áreas como desarrollo de software, sistemas inteligentes, infraestructura de redes, y tecnologías emergentes. 
+          <strong>¡Aquí no solo aprendes, aplicas!</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Footer -->
+  <footer class="bg-primary text-white text-center py-3">
+    <div class="container">
+      &copy; 2025 Sistema de Seguimiento de Pasantías. Todos los derechos reservados.
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"></script>
+
+  <!-- JavaScript -->
+  <script type="module" src="js/docente.js"></script>
+</body>
+
+</html>
+
+
