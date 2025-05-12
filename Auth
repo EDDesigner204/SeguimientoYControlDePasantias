@@ -1,0 +1,124 @@
+//Auth
+// js/auth.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Configuración Firebase (misma que en firebase-config.js)
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ4G1s-J8XyDrZ2NwmJ_fmbooVsndPC88",
+  authDomain: "controlayudantiassal.firebaseapp.com",
+  projectId: "controlayudantiassal",
+  storageBucket: "controlayudantiassal.firebasestorage.app",
+  messagingSenderId: "774566325891",
+  appId: "1:774566325891:web:7f4ddf697094525ed3b5b6",
+  measurementId: "G-2Z8K02KG3V"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// --------------------- REGISTRO ---------------------
+const registerForm = document.getElementById("registerForm");
+if (registerForm) {
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("registerName").value;
+    const email = document.getElementById("registerEmail").value;
+    const password = document.getElementById("registerPassword").value;
+    const role = document.getElementById("registerRole").value;
+    const errorDiv = document.getElementById("registerError");
+    errorDiv.textContent = "";
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Guardar datos del usuario en Firestore
+      await setDoc(doc(db, "usuarios", user.uid), {
+        nombre: name,
+        rol: role,
+        email: email
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Registro exitoso!',
+        text: 'Ahora puedes iniciar sesión.',
+        timer: 2500,
+        showConfirmButton: false,
+        timerProgressBar: true
+      });
+      
+      registerForm.reset();
+      // Redireccionar si quieres automáticamente
+    } catch (error) {
+      errorDiv.textContent = error.message;
+    }
+  });
+}
+
+// --------------------- LOGIN ---------------------
+const loginForm = document.getElementById("loginForm");
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const errorDiv = document.getElementById("loginError");
+    errorDiv.textContent = "";
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Obtener rol desde Firestore
+      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const rol = data.rol;
+
+        // Redireccionar según el rol
+        if (rol === "admin") {
+          window.location.href = "admin.html";
+        } else if (rol === "docente") {
+          window.location.href = "docente.html";
+        } else if (rol === "pasante") {
+          window.location.href = "pasante.html";
+        } else {
+          errorDiv.textContent = "Rol desconocido. Contacta al administrador.";
+        }
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se encontraron datos del usuario.',
+          confirmButtonText: 'Aceptar'
+        });
+        //errorDiv.textContent = "No se encontraron datos del usuario.";
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Usuario o Contraseña incorrectos',
+        confirmButtonText: 'Aceptar'
+      });
+      //errorDiv.textContent = error.message;
+    }
+  });
+}
