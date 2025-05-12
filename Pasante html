@@ -1,0 +1,160 @@
+//Pasante html
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auxiliar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+  <!-- NAVBAR RESPONSIVO -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-naranja sticky-top shadow">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="img/log.png" alt="Logo" width="40" height="40" class="me-2">
+        Universidad Salesiana
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="#quienes-somos">Quiénes Somos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#informaciones">Informaciones</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login.html">Acceder</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h2>Bienvenido, Auxiliar</h2>
+
+    <!-- Formulario para registrar ayudantía -->
+    <form id="registerAssistanceForm" class="p-4 rounded shadow bg-white">
+      <h4 class="mb-4 text-primary">Registro de Ayudantía</h4>
+
+      <!-- Fecha -->
+      <div class="mb-3">
+        <label for="date" class="form-label">📅 Fecha de Ayudantía</label>
+        <div class="input-group">
+          <span class="input-group-text bg-primary text-white">
+            <i class="fa-solid fa-calendar-days"></i>
+          </span>
+          <input type="date" class="form-control border-primary" id="date" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="horaEntrada" class="form-label">⏰ Hora de Entrada</label>
+        <div class="input-group">
+          <span class="input-group-text bg-primary text-white">
+            <i class="fa-solid fa-clock"></i>
+          </span>
+          <input type="time" class="form-control border-primary" id="horaEntrada" required>
+        </div>
+      </div>
+
+      <!-- Hora de Salida -->
+      <div class="mb-3">
+        <label for="horaSalida" class="form-label">⏰ Hora de Salida</label>
+        <div class="input-group">
+          <span class="input-group-text bg-primary text-white">
+            <i class="fa-solid fa-clock"></i>
+          </span>
+          <input type="time" class="form-control border-primary" id="horaSalida">
+        </div>
+      </div>
+
+      <!-- Cantidad de Asistentes -->
+      <div class="mb-3">
+        <label for="attendees" class="form-label">👥 Cantidad de Asistentes</label>
+        <input type="number" class="form-control border-primary" id="attendees" min="1" required>
+      </div>
+
+      <!-- Temas Tratados -->
+      <div class="mb-3">
+        <label for="topics" class="form-label">📚 Temas Tratados</label>
+        <textarea class="form-control border-primary" id="topics" rows="3" placeholder="Describe brevemente los temas tratados..." required></textarea>
+      </div>
+
+      <!-- Botón de envío -->
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="fa-solid fa-paper-plane me-2"></i>Registrar Ayudantía
+      </button>
+    </form>
+
+
+    <!-- Tabla de reportes -->
+    <h4 class="mt-5">Mis Reportes de Ayudantía</h4>
+    <div id="reportesContainer" class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Fecha</th>
+            <th>Hora de Entrada</th>
+            <th>Hora de Salida</th>
+            <th>Asistentes</th>
+            <th>Temas Tratados</th>
+            <th>Calificación</th> <!-- Nuevo encabezado para Calificación -->
+            <th>Observación</th>  <!-- Nuevo encabezado para Observación -->
+          </tr>
+        </thead>
+        <tbody id="reportesTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Cerrar sesión -->
+    <div class="mt-4">
+      <button class="btn btn-danger" id="logoutButton">Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <!-- SECCIÓN QUIÉNES SOMOS -->
+  <section id="quienes-somos" class="py-5 bg-light">
+    <div class="container">
+      <div class="p-4 bg-white shadow rounded text-center">
+        <h2 class="mb-3 text-primary">Ingeniería de Sistemas</h2>
+        <p class="lead">
+          En la Universidad Salesiana, la carrera de <strong>Ingeniería de Sistemas</strong> impulsa a sus estudiantes a aplicar sus conocimientos técnicos en el desarrollo de soluciones reales. Se fomenta una formación desde la perspectiva de un ingeniero comprometido con la transformación social y tecnológica del entorno.
+        </p>
+        <p>
+          Nuestros estudiantes participan activamente en proyectos que resuelven problemas del mundo real, adquiriendo experiencia valiosa en áreas como desarrollo de software, sistemas inteligentes, infraestructura de redes, y tecnologías emergentes. 
+          <strong>¡Aquí no solo aprendes, aplicas!</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Footer -->
+  <footer class="bg-primary text-white text-center py-3">
+    <div class="container">
+      &copy; 2025 Sistema de Seguimiento de Pasantías. Todos los derechos reservados.
+    </div>
+  </footer>
+  <!-- Firebase SDK -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"></script>
+
+  <!-- JavaScript -->
+  <script type="module" src="js/pasante.js"></script>
+</body>
+
+</html>
+
