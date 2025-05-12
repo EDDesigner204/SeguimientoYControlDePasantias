@@ -1,0 +1,344 @@
+//Admin
+// Inicializar Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ4G1s-J8XyDrZ2NwmJ_fmbooVsndPC88",
+  authDomain: "controlayudantiassal.firebaseapp.com",
+  projectId: "controlayudantiassal",
+  storageBucket: "controlayudantiassal.firebasestorage.app",
+  messagingSenderId: "774566325891",
+  appId: "1:774566325891:web:7f4ddf697094525ed3b5b6",
+  measurementId: "G-2Z8K02KG3V"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
+
+// Función para crear una nueva materia
+async function createSubject() {
+  const subjectName = prompt("Nombre de la materia:");
+  if (!subjectName) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campo vacío',
+      text: 'El nombre de la materia no puede estar vacío.',
+      confirmButtonText: 'Aceptar'
+    });
+    return;
+  }
+  try {
+    await addDoc(collection(db, "materias"), {
+      nombre: subjectName
+    });
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Materia creada con éxito.',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    });    
+    showContent(); // Actualizar la lista de materias y pasantes
+  } catch (error) {
+    console.error("Error al crear la materia: ", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Ocurrió un error al crear la materia. Inténtalo nuevamente.',
+      confirmButtonText: 'Aceptar'
+    });
+  }
+}
+
+// Función para asignar un pasante a un docente
+async function assignStudentToTeacher() {
+  const pasanteId = prompt("ID del Pasante:");
+  const docenteId = prompt("ID del Docente:");
+  const materiaId = prompt("ID de la Materia:");
+
+  if (!pasanteId || !docenteId || !materiaId) {
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Campos obligatorios',
+      text: 'Todos los campos son obligatorios.',
+      confirmButtonText: 'Aceptar'
+    });    
+  }
+
+  try {
+    const pasanteRef = doc(db, "pasantes", pasanteId);
+    await updateDoc(pasanteRef, {
+      docenteId: docenteId,
+      materiaId: materiaId
+    });
+  
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Pasante asignado con éxito.',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    });
+  
+    showContent(); // Actualizar la lista de pasantes asignados
+  
+  } catch (error) {
+    console.error("Error al asignar pasante: ", error);
+  
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Ocurrió un error al asignar el pasante. Intenta nuevamente.',
+      confirmButtonText: 'Aceptar'
+    });
+  }  
+}
+
+// Función para mostrar el contenido del administrador (materias, pasantes y docentes)
+let listaDocentes = [];
+let listaMaterias = [];
+
+async function showContent() {
+  const contentDiv = document.getElementById('content');
+  contentDiv.innerHTML = ''; // Limpiar contenido previo
+
+  // Mostrar materias
+  const materiasRef = collection(db, "materias");
+  const materiasSnapshot = await getDocs(materiasRef);
+
+  listaMaterias = [];
+  const materiaSection = document.createElement('div');
+  materiaSection.innerHTML = `<h4>Materias:</h4>`;
+  materiasSnapshot.forEach(doc => {
+    const materia = doc.data();
+    listaMaterias.push({ id: doc.id, nombre: materia.nombre });
+
+    const materiaCard = document.createElement('div');
+    materiaCard.classList.add('card', 'mb-3');
+    materiaCard.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">${materia.nombre}</h5>
+      </div>
+    `;
+    materiaSection.appendChild(materiaCard);
+  });
+
+  // Mostrar usuarios
+  const usuariosRef = collection(db, "usuarios");
+  const usuariosSnapshot = await getDocs(usuariosRef);
+
+  listaDocentes = [];
+  const pasanteSection = document.createElement('div');
+  pasanteSection.innerHTML = `<h4>Pasantes sin asignación:</h4>`;
+
+  const docenteSection = document.createElement('div');
+  docenteSection.innerHTML = `<h4>Docentes:</h4>`;
+
+  usuariosSnapshot.forEach(doc => {
+    const usuario = doc.data();
+    const userId = doc.id;
+
+    if (usuario.rol === "pasante" && !usuario.materiaAsignada) {
+      const pasanteCard = document.createElement('div');
+      pasanteCard.className = 'card mb-3';
+      pasanteCard.innerHTML = `
+        <div class="card-body">
+          <h5 class="card-title">${usuario.nombre}</h5>
+          <p class="card-text">Email: ${usuario.email}</p>
+          <p class="card-text">ID: ${userId}</p>
+          <button class="btn btn-primary" onclick="mostrarFormularioAsignacion('${userId}')">Asignar a Docente/Materia</button>
+        </div>
+      `;
+      pasanteSection.appendChild(pasanteCard);
+    }
+
+    if (usuario.rol === "docente") {
+      listaDocentes.push({ id: userId, nombre: usuario.nombre });
+
+      const docenteCard = document.createElement('div');
+      docenteCard.className = 'card mb-3';
+      docenteCard.innerHTML = `
+        <div class="card-body">
+          <h5 class="card-title">${usuario.nombre}</h5>
+          <p class="card-text">Email: ${usuario.email}</p>
+          <p class="card-text">ID: ${userId}</p>
+        </div>
+      `;
+      docenteSection.appendChild(docenteCard);
+    }
+  });
+
+  // Construir un mapa de docentes por ID para consulta rápida
+  const docentesMap = {};
+  usuariosSnapshot.forEach(doc => {
+    const user = doc.data();
+    if (user.rol === "docente") {
+      docentesMap[doc.id] = user.nombre;
+    }
+  });
+
+  const asignadosSection = document.createElement('div');
+  asignadosSection.innerHTML = `<h4>Ayudantes Asignados:</h4>`;
+
+  const tabla = document.createElement('table');
+  tabla.classList.add('table', 'table-bordered', 'table-striped');
+  tabla.innerHTML = `
+    <thead class="table-dark">
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Materia Asignada</th>
+        <th>Docente Asignado</th>
+      </tr>
+    </thead>
+    <tbody id="asignadosTableBody"></tbody>
+  `;
+
+  const tbody = tabla.querySelector("#asignadosTableBody");
+
+  usuariosSnapshot.forEach(doc => {
+    const user = doc.data();
+    if (
+      user.rol === "pasante" &&
+      user.materiaAsignada &&
+      user.docenteAsignadoId
+    ) {
+      const docenteNombre = docentesMap[user.docenteAsignadoId] || "Desconocido";
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${user.nombre}</td>
+        <td>${user.email}</td>
+        <td>${user.materiaAsignada}</td>
+        <td>${docenteNombre}</td>
+        <td>
+        <button class="btn btn-danger" onclick="removerAsignacion('${doc.id}')">Remover</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+  });
+
+  asignadosSection.appendChild(tabla);
+  contentDiv.appendChild(asignadosSection);
+
+  // Función para remover la asignación
+  window.removerAsignacion = async function(pasanteId) {
+    const pasanteRef = doc(db, "usuarios", pasanteId);
+    await updateDoc(pasanteRef, {
+      materiaAsignada: null,
+      docenteAsignadoId: null
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Asignación removida correctamente.',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    });
+    
+    showContent(); // Recargar para actualizar la lista
+  };
+
+  contentDiv.appendChild(materiaSection);
+  contentDiv.appendChild(pasanteSection);
+  contentDiv.appendChild(docenteSection);
+}
+
+
+
+// Función para cerrar sesión
+function logout() {
+  signOut(auth).then(() => {
+    window.location.href = 'index.html'; // Redirigir al login
+  }).catch((error) => {
+    console.error("Error al cerrar sesión: ", error);
+  });
+}
+
+// Función para verificar el estado de autenticación
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Si el administrador está autenticado, mostramos las opciones de gestión
+    showContent();
+  } else {
+    // Si no está autenticado, redirigimos al login
+    window.location.href = 'index.html';
+  }
+});
+
+window.mostrarFormularioAsignacion = function(pasanteId) {
+  const contentDiv = document.getElementById('content');
+
+  const formContainer = document.createElement('div');
+  formContainer.classList.add('card', 'mb-4', 'p-3');
+  formContainer.innerHTML = `
+    <h5>Asignar Pasante a Docente y Materia</h5>
+    <label>Selecciona Docente:</label>
+    <select id="docenteSelect" class="form-select mb-2">
+      <option value="">-- Seleccionar Docente --</option>
+      ${listaDocentes.map(d => `<option value="${d.id}">${d.nombre}</option>`).join('')}
+    </select>
+
+    <label>Selecciona Materia:</label>
+    <select id="materiaSelect" class="form-select mb-2">
+      <option value="">-- Seleccionar Materia --</option>
+      ${listaMaterias.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('')}
+    </select>
+
+    <button class="btn btn-success" onclick="asignarPasante('${pasanteId}')">Confirmar Asignación</button>
+  `;
+
+  contentDiv.prepend(formContainer); // Aparece arriba
+}
+
+window.asignarPasante = async function(pasanteId) {
+  const docenteId = document.getElementById("docenteSelect").value;
+  const materia = document.getElementById("materiaSelect").value;
+
+  if (!docenteId || !materia) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Selección requerida',
+      text: 'Por favor selecciona un docente y una materia.',
+      confirmButtonText: 'Aceptar'
+    });    
+    return;
+  }
+
+  const pasanteRef = doc(db, "usuarios", pasanteId);
+  await updateDoc(pasanteRef, {
+    materiaAsignada: materia,
+    docenteAsignadoId: docenteId
+  });
+
+  Swal.fire({
+    icon: 'success',
+    title: '¡Éxito!',
+    text: 'Pasante asignado correctamente.',
+    timer: 2000,
+    showConfirmButton: false,
+    timerProgressBar: true
+  });
+  
+  showContent(); // Recargar para actualizar
+}
+
+
+
+// Eventos
+document.getElementById('logoutButton').addEventListener('click', logout);
+document.getElementById('createSubjectButton').addEventListener('click', createSubject);
+document.getElementById('assignStudentButton').addEventListener('click', assignStudentToTeacher);
+
+
+
